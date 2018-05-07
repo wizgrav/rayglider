@@ -1,0 +1,8 @@
+uniform vec2 resolution;
+
+uniform sampler2D tex;
+
+void main() {
+	vec2 fragCoord = v_texCoord0 * resolution;
+	gl_FragColor = fxaa(u_texture0, fragCoord, resolution);
+}

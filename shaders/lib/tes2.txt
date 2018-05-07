@@ -1,0 +1,6 @@
+#import C < color >
+
+void $main(out vec4 c, in vec2 fc) {
+    vec2 uv = fc / iRes.xy;
+    c.rgb = @C.hsv2rgb(vec3( uv, 0.66 )); 
+}

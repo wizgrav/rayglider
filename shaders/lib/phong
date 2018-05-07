@@ -1,0 +1,16 @@
+vec3 $direct( in $State s, in vec3 color, in vec3 dir ) 
+{
+    vec3 halfDir = normalize( dir );
+
+    float dotNL = saturate( dot( s.normal, dir ) );
+	float dotNH = saturate( dot( s.normal, halfDir ) );
+	float dotLH = saturate( dot( dir, halfDir ) );
+
+    float fresnel = exp2( ( -5.55473 * dotLH - 6.98316 ) * dotLH );
+
+	vec3 F = ( 1.0 - s.specular ) * fresnel + s.specular;
+	
+    vec3 L = (1. / PI) * s.diffuse * dotNL;
+
+	return color * (L + F * ( 0.25 * (1. / PI) * ( s.shiny * 0.5 + 1.0 ) * pow( dotNH, s.shiny ) ));
+}

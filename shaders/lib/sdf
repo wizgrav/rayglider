@@ -1,0 +1,53 @@
+#import def <>
+#export sdf_map <vec2 (vec3 p)>
+#export sdf_ray_steps <const int = 64>
+#export sdf_min_dist <const float = 1.>
+#export sdf_max_dist <const float = 20.>
+#export sdf_shadow_steps <const int = 16>
+
+vec2 $cast( in vec3 ro, in vec3 rd )
+{
+    float t = @def.sdf_min_dist;
+    float m = -1.0;
+    for( int i=0; i < @def.sdf_ray_steps; i++ )
+    {
+	    float precis = 0.0005*t;
+	    vec2 res = @def.sdf_map( ro+rd*t );
+        if( res.x < precis || t > @def.sdf_maxdist ) break;
+        t += res.x;
+	    m = res.y;
+    }
+
+    if( t > @def.sdf_max_dist ) m=-1.0;
+    return vec2( t, m );
+}
+
+float $shadow( $State s, in vec3 rd, in float mint, in float tmax )
+{
+    vec3 ro = s.point;
+	float res = 1.0;
+    float t = mint;
+    for( int i=0; i < @def.sdf_shadow_steps; i++ )
+    {
+		float h = @def.sdf_map( ro + rd*t ).x;
+        res = min( res.x, 8.0*h/t );
+        t += clamp( h, 0.02, 0.10 );
+        if( h<0.001 || t>tmax ) break;
+    }
+    return clamp( res, 0.0, 1.0 );
+}
+
+float $occlusion( vec3 pos, vec3 nor )
+{
+    float oc = 0.0;
+    float sca = 1.0;
+    for( int i=0; i<5; i++ )
+    {
+        float hr = 0.01 + 0.12*float(i)/4.0;
+        vec3 aopos =  nor * hr + pos;
+        float dd = @def.sdf_map( aopos ).x;
+        oc += -(dd-hr)*sca;
+        sca *= 0.95;
+    }
+    return clamp( 1.0 - 3.0*oc, 0.0, 1.0 );    
+}

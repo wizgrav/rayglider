@@ -1,0 +1,30 @@
+<html>
+<head>
+<style>
+	body {
+		background-color: green;
+	}
+
+	div {
+		width:100%;
+		height: 100%;
+		position: absolute;
+		top: 0; left: 0;
+	}
+</style>
+</head>
+<body>
+	<script>
+        if (window.name && !window.name.indexOf("raygl$")) {
+          window.parent.postMessage({
+            name: window.name.split("$")[1],
+						data: window.location.search,
+						raygl: true
+          }, "*");
+        } else {
+          window.location = "https://wizgrav.github.io/rayglider/run.html"+window.location.search;
+        }
+      </script>
+
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+	<head>
+       
+    <meta charset="utf-8">        
+    <meta name="author" content="Yannis Gravezas <wizgrav@gmail.com>">
+    <meta name="description" content="Welcome to the realms of Boom">
+
+    <!-- Mobile Stuff -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="msapplication-tap-highlight" content="no">
+
+    <!-- Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Rayglider">
+    <link rel="icon" sizes="192x192" href="./favicon.png">
+
+    <!-- Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Rayglider">
+    <link rel="apple-touch-icon" href="./favicon.png">
+
+    <!-- Windows 8 -->
+    <meta name="msapplication-TileImage" content="./favicon.png">
+    <meta name="msapplication-TileColor" content="#FFFFFF">
+
+
+    <meta name="theme-color" content="#000000">
+
+    <link rel="icon" type="image/png" href="./favicon.png" />
+
+    <title>Rayglider</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Mono" rel="stylesheet">
+    <link href='./lib/codemirror.css' rel='stylesheet' type='text/css'>
+    <style>
+          * {
+        margin:0;
+        padding:0;
+      }
+      body {
+        font-family:'Roboto';
+        overflow: hidden;
+      }
+      #header {
+        position:fixed;
+        z-index: 100;
+        padding-top:0.33vh;
+        font-family:'Roboto';
+      }
+      audio {
+        position: fixed;
+        bottom:0;
+        left: 0;
+        width:100%;
+      }
+      body, canvas {
+        width: 100%;
+        height: 100%;
+      }
+      
+      canvas {
+        position: absolute;
+        top:0;
+        left:0;
+      }
+
+      #header #info {
+        padding-top: 0.8vh;
+        width: 100vw;
+        font-size: 0vh;
+        transition: opacity 0.2s, font-size 0.4s;
+        overflow: hidden;
+        opacity: 0;
+        color: white;
+        text-shadow: 0.1vh 0.2vh #666;
+      }
+
+      #header:hover #info {
+        font-size: 2.2vh;
+        opacity: 1;
+      }
+      
+      #header .buttons {
+        transition: opacity 0.3s;
+        opacity: 0;
+      }
+
+      #header:hover .buttons {
+        opacity: 1;
+      }
+
+      #header #info a {
+        text-decoration: none;
+        color: #fff;
+        margin-left:0.2vw;
+      }
+
+      #header img {
+        vertical-align: middle;
+      }
+
+      #header span {
+        color: white;
+        font-weight:bold;
+        font-size: 2vh;
+        text-shadow: 0.2vh 0.2vh black;
+        vertical-align: middle;
+
+      }
+
+      button {
+        background-color: #FFF;
+        font-size: 2vh;
+        font-weight: bold;
+        color: black;
+        border-radius:0.66vh;
+        padding: 0.66vh;
+        margin-left:0.33vw;
+        cursor:pointer;
+        margin-top: 0.2vh;
+        font-family:'Roboto';
+      }
+      
+      #export button {
+        margin-top: 1vh;
+      }
+      button.disabled {
+        background-color: #DDD;
+        color: #333;
+        opacity:0.66;
+      }
+      button:hover {
+        background-color: white;
+        color: black;
+      }
+      button:focus {
+        outline:0;
+      }
+
+      #audio {
+        position: fixed;
+        bottom:0;
+        left: 0;
+        width:100%;
+        z-index:1000;
+      }
+      
+      #audio audio {
+        position:relative;
+        display: block;
+      }
+      #editor {
+        margin:0;
+        padding:0;
+        opacity:0;
+        transition: opacity 0.3s;
+        margin-top: 0.33vh;
+        z-index:10000;
+      }
+      #header:hover #editor, #header:hover #config {
+        opacity:1;
+      }
+      #editor > div {
+        position:relative;
+        background-color: rgba(0,0,0,0.1);
+        z-index: 0;
+      }
+      
+      input, select {
+        font-weight: bold;
+        font-size: 1.33vh;
+        font-family:'Roboto Mono', monospace;
+        vertical-align: middle;
+        background-color: #eee;
+      }
+      #editor input[type=text]{
+        background-color: transparent;
+        color: rgba(32,32,32,0.96);
+        display:inline-block;
+        border: 0.2vh solid #ccc;
+        font-family:'Roboto Mono', monospace;;
+        font-weight: bold;
+        width:99vw;
+        margin-top:0;
+        padding: 0.1%;
+      }
+      #editor input[type=checkbox]{
+        z-index:1;
+        height:1.6vh;
+        position:absolute;
+        right:0;
+        top: 0;
+        bottom: 0;
+        margin:auto;
+      }
+
+      input[type=number] {
+        border-radius: 0.33vh;
+        border: 0;
+        background-color: rgba(255,255,255,0.9);
+        padding: 0.33vh;
+      }
+
+      #editor > div > button {
+        z-index: 1;
+        height: 1.8vh;
+        font-size: 1.2vh;
+        width: 3.33vh;
+        position: absolute;
+        right: 2vh;
+        top: 0;
+        padding: 0;
+        border-radius: 0.33vh;
+        border: none;
+        bottom: 0;
+        margin: auto;
+      }
+
+      #editor div.red input[type=text]{
+        color: rgb(0, 36, 36);
+      }
+      #editor div.green input[type=text]{
+        color: rgb(36, 0, 36);
+      }
+      #editor div.blue input[type=text]{
+        color: rgb(36, 36, 0);
+      }
+        #editor div.alpha input[type=text]{
+        color: rgb(32, 32, 32);
+      }
+
+      #editor div.red{
+        background-color: rgba(255, 220, 220, 0.98);
+      }
+      #editor div.green{
+        background-color: rgba(220, 255, 220, 0.98);
+      }
+      #editor div.blue{
+        background-color:  rgba(220, 220, 255, 0.98);
+      }
+        #editor div.alpha{
+        background-color:  rgba(255, 255, 255, 0.98);
+      }
+        #editor > div {
+          overflow:hidden;
+        }
+      #editor > div > div {
+        background-color: rgba(200,200,200,0.66);
+        border-left: 0.16vh solid rgba(255,255,255,0.33);
+        position: absolute;
+        z-index: -1;
+        width: 50vw;
+        height: 100%;
+        right:0;
+        top:0;
+        
+      }
+      
+     
+      #header a {
+        text-decoration: none;
+        vertical-align: middle;
+        opacity: 0.9;
+        transition: opacity 0.1s;
+        text-shadow: 0.1vh 0.1vh #333;
+        margin-left: 1vw;
+      }
+      #info a {
+        opacity: 0.9;
+      }
+      #header a:hover {
+        text-shadow: 0.2vh 0.2vh #333;
+        opacity: 1.0;
+      }
+      
+      #config {
+        opacity:0;
+        transition: opacity 0.2s;
+        margin-top:0.36vh;
+        color: #eee;
+        text-shadow: 0.06px 0.06px #666;
+        font-weight: bold;
+        font-size: 1.6vh;
+        font-family:'Roboto Mono', monospace;
+      }
+      
+      #export {
+        position: fixed;
+        width: 100vw;
+        height: 79vh;
+        top: 9vh;
+        z-index: 10000;
+        visibility:hidden;
+        pointer-events: none;
+      }
+
+      body.code #export {
+        visibility:visible;
+        pointer-events:all;
+      }
+
+      body {
+        background-color: black;
+      }
+
+      span {
+        font-size: 1.66vh;
+        font-weight: bold;
+      }
+
+      select {
+        padding: 0.2vh;
+        border-radius: 0.2vh;
+        margin-left:0.2vh;
+      }
+
+      #logo {
+        border-radius: 0.66vh;
+        height: 2.3vh;
+        border: 0.66vh solid white;
+        margin-left: 0.33vh;
+        background-color: white;
+        padding-left: 0.2vh;
+        padding-right: 0.2vh;
+        padding-bottom: 0.4vh;
+      }
+      
+      .CodeMirror {
+        height: auto;
+        background-color: rgba(255, 255, 255, 0.99);
+      }
+      .CodeMirror span{
+        font-family: 'Roboto Mono', monospace;
+      }
+
+      #main, #side {
+        width: 49.8vw;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        display: inline-grid;
+        border-top: 0.66vh solid #f7f7f7;
+        border-bottom: 0.66vh solid #f7f7f7;
+      }
+      
+      #side {
+        opacity: 0.96;
+      }
+      body.error  #main, body.error  #side{
+        border-top: 0.66vh solid #d00000;
+        border-bottom: 0.66vh solid #d00000;
+      }
+
+      #main {
+        float:left;
+      }
+
+      #side {
+        float:right;
+      }
+      body.split #main {
+        width:100vw;
+      }
+
+      body.split #side {
+        display: none;
+      }
+      
+      #foot {
+        position: absolute;
+        bottom: -6.4vh;
+        font-family:'Roboto';
+      }
+      #foot div {
+        width: 33vw;
+        display: inline-block;
+      }
+
+      #foot span {
+        color: white;
+        font-size: 2.2vh;
+        margin-right: 1vw;
+        text-shadow: 0.1vh 0.1vh #666;
+      }
+
+      button::first-letter {
+        color: #666;
+      }
+
+      .buttons {
+        display: inline;
+      }
+      #split:after {
+        content: "SOLO";
+      }
+      #split.disabled:after {
+        content: "SPLIT";
+      }
+
+      #play:after {
+        content: "PAUSE";
+      }
+      #play.disabled:after {
+        content: "PLAY";
+      }
+      .cm-s-default .cm-link {
+        text-decoration: none;
+        color: #05a;
+      }
+
+      .cm-link {
+        cursor:help;
+      }
+      
+      #state:after {
+        content: "State";
+      }
+
+      #state, #state.wait {
+        color: #999;
+      }
+
+      #state.wait:after {
+        content: "Wait..";
+      }
+
+      #state.good {
+        color: rgb(220,255,220);
+      }
+
+      #state.bad {
+        color: rgb(255,128,128);
+      }
+
+      #soundcloud {
+        display: none;
+      }
+
+      body.soundcloud #soundcloud {
+        display: inline;
+      }
+
+      #tap {
+        width: 100vw;
+        height:100vh;
+        position: fixed;
+        top:0; left:0;
+        background: rgba(0,0,0,0.9);
+        display: none;
+        justify-content: center;
+      }
+      
+      #tap div {
+        color: white;
+        font-size: 6.66vh;
+        font-weight: bold;
+        align-self: center;
+      }
+    </style>
+    </head>
+
+    <body>
+      
+      <div id="audio" title="Alt-P toggles play/pause. Alt-<KLNM> seeks -/+ 5 and -/+ 30 sec. Page also accepts drag & drop of audio files. WARNING: The volume control affects the measurements.">    
+        
+      </div>
+      <div id="header" >
+        <img id="logo" title="Rayglider &copy; 2018 Yannis Gravezas <wizgrav@gmail.com>" src="./favicon.png"/>
+        <div class="buttons" title="Alt+<Letter> toggles buttons. The State link's url contains a snapshot of the current state.">
+        
+        <button accesskey="F" id="full">FULL</button>
+        <button accesskey="H" id="hd">HD</button>
+        <button accesskey="C" id="code" class="disabled">CODE</button>
+        <button accesskey="J" id="joy">JOY</button>
+        
+        </div>
+      <div class="buttons">    
+      <a id="state" href="" target="_blank" ></a>
+      <a style="color: rgb(220,220,255);" href="https://www.github.com/wizgrav/rayglider" target="_blank">About</a>
+    </div>
+    <img id="soundcloud" style="float: right; margin-top: 1vh; margin-right: 1vw;" src="./assets/soundcloud.png"/>
+      
+        <div id="info">Listening to Brad Sucks - I think I started a trend</div>
+      </div>
+      <div id="export">
+        <div id="main">
+         
+        </div>
+        <div id="side">
+          
+        </div>
+        <div id="foot">
+          <div  style="text-align: left; float:left;width:25vw;">
+            <button accesskey="A" id="apply">APPLY</button>
+            <button accesskey="P" id="play"></button>
+          </div>
+          <div id="stats" style="text-align: center; padding-top:1.61vh;width:50vw;">
+            <span style="color:#EEE">Frame 2345677</span> 
+            <span>59.1 FPS</span> 
+            <span id="time" style="color:#EEE">00:01:30.1s</span></div> 
+          <div style="text-align: right; float: right; width:25vw;">
+            <button accesskey="R" id="reset">RESET</button>
+            <button accesskey="S" id="split"></button>
+          </div>
+        </div>
+        <audio controls loop muted></audio>
+        
+      </div>
+      <canvas></canvas>
+      <div id="tap"> <div>TAP/CLICK TO UNMUTE</div> </div>
+      <script src="./dist/rayglider.js"></script>
+    </body>
+</html>

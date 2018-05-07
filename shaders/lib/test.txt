@@ -1,0 +1,36 @@
+#pass ass < 0.5 0.5 float rel clamp repeat cube vmap map mips nomips noblend blend screen nop>
+#cube ass <google.com>
+#image ass <http://www.google.com>
+#video ass <www.google.com/asdfdf>
+#import S < sdf >
+#export sdf_minDist < const float = 1.0 >
+#boom bass < mix(@, smoothstep(0., 0.1, abs($0.x - $0.x)), 0.2) >
+#band 0 < t: [0,1,2,3], s: [0.01, 0.01, 0.01, 0.01], b: [1, 23, 100, 110], a: [0.5, 0.3, 0.4, 0.4] >
+#track asas <>
+#net asas <>
+
+
+#import P < phong >
+#import IQ < iq_sdf >
+#export sdf_map < vec2 (vec3 p) >
+#export sdf_steps < const int = 100 >
+#export state < void (inout mat4[4]) >
+
+
+vec2 $sdf_map(vec3 p) {
+    vec2 r = vec2( @IQ.sdTorus(p, vec2(10., 1.)), 1.0);
+    r = @IQ.opU(r, @IQ.sdBox(p, vec3(1. 5. 8.)));
+    return r;
+}
+
+void $main(out vec4 c, in vec2 uv) {
+	@P.Surface s;
+    vec2 dm = @S.march(vec3(0.), vRay, s.point);
+    s.normals = @S.norm(s.point);
+    s.specular = vec3(0., 0.5,0.2);
+    s.diffuse = vec3(0., 0.5,0.2);
+    s.shiny = 60.;
+    vec3 l = @P.direct(s, vec3(0.33, 0.22, 0.3), vec3(0.33, 0.22, 0.3));
+    c.xyz = l * @S.shadow(s.point);
+    c.xyz += vec3(0.2) * @S.ao();
+}
