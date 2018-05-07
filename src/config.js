@@ -157,11 +157,8 @@ function parse(t, u) {
     if(!left) finalize();
 }
 
-var te = new TextDecoder("utf-8");
-
 function decomparse(s, name) {
-    lzma.decompress(util.atob(s), function(result, error) {
-        var s = typeof result === "string" ? result : te.decode(result);
+    lzma.decompress(util.atob(s), function(s, error) {
         var c = config.imports[name];
         document.body.removeChild(c.iframe);
         c.iframe = null;
