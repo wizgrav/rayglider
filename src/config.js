@@ -115,12 +115,10 @@ function parse(t, u) {
     });
 
     ds.import.forEach(function(m){
-        
         left++;
-        
-        var sm = m[2];
-        if(!sm) return;
 
+        var sm = m[2];
+        
         var imp = config.imports;
         if(!imp[sm]) imp[sm] = cache[sm];
         if(imp[sm]){
@@ -130,6 +128,7 @@ function parse(t, u) {
             return;
         }
         
+        if(!sm) return;
         
         cache[sm] = imp[sm] = obj.ns[m[1]] = createObj();
 
