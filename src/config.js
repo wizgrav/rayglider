@@ -7,8 +7,6 @@ var asset = require("./asset");
 var lzma = util.lzma;
 var State = require("./state");
 
-var cache = {};
-
 var config;
 
 function createConfig() {
@@ -59,9 +57,10 @@ function createObj() {
         type: "import"
     }
 }
+
 function parse(t, u) {
-    var obj = cache[u], arr, ds;
     if(!t) return;
+    var obj = config.imports[u], arr, ds;
     if(!obj) {
         obj = createObj();
     }
@@ -82,6 +81,7 @@ function parse(t, u) {
     
     if(!u) config.imports[u] = obj;
 
+    if(!obj.processed){}
     var ds = obj.ds;
 
     ["cube", "image", "video", "net"].forEach(function(k) { 
@@ -94,8 +94,10 @@ function parse(t, u) {
                     type: k
                 }
             }
-            config.assetCount++;
-            config.assets[sm[2]] = ou;
+            if(!config.assets[sm[2]]) {
+                config.assetCount++;
+                config.assets[sm[2]] = ou;
+            }
             obj.ns[sm[1]] = ou;
         });
     });
@@ -119,7 +121,6 @@ function parse(t, u) {
         var sm = m[2];
         
         var imp = config.imports;
-        if(!imp[sm]) imp[sm] = cache[sm];
         if(imp[sm]){
             obj.ns[m[1]] = imp[sm];
             if(sm) imp[sm].outgoing.push(u);
@@ -128,7 +129,7 @@ function parse(t, u) {
         
         left++;
 
-        cache[sm] = imp[sm] = obj.ns[m[1]] = createObj();
+        imp[sm] = obj.ns[m[1]] = createObj();
 
         imp[sm].outgoing.push(u);
 
@@ -150,6 +151,7 @@ function parse(t, u) {
             }
         }
     });
+
     left--;
     if(!left) finalize();
 }
