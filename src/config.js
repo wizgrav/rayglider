@@ -122,7 +122,7 @@ function parse(t, u) {
         if(!imp[sm]) imp[sm] = cache[sm];
         if(imp[sm]){
             obj.ns[m[1]] = imp[sm];
-            imp[sm].outgoing.push(u);
+            if(sm) imp[sm].outgoing.push(u);
             return;
         }
         
