@@ -185,6 +185,8 @@ function finalize() {
 
     var passes = [];
 
+    config.imports[""].exported = config.exports;
+
     Object.keys(config.assets).forEach(function(o, i) {
         var a = config.assets[o];
         a.idx = idx++;
@@ -194,7 +196,7 @@ function finalize() {
     order.forEach(function(o, i) {
         var a = config.imports[o];
         a.outgoing = [];
-        a.idx = idx++;
+        a.idx = o ? idx++ : "";
         passes.push({data: "noblend", nop: true});
         var mainPass = {data: "1 1 0 0 rel screen noblend", idx: a.idx, parent: a};
         a.passes.forEach(function(p){ 

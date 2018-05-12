@@ -1,4 +1,11 @@
-vec3 $direct( in $State s, in vec3 color, in vec3 dir ) 
+struct $Surface {
+    vec3 normal;
+    vec3 diffuse;
+    vec3 specular;
+    float shiny;
+};
+
+vec3 $direct( in $Surface s, in vec3 color, in vec3 dir ) 
 {
     vec3 halfDir = normalize( dir );
 

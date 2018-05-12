@@ -59,8 +59,11 @@ var ext2 = /[\$](\w+)/g;
 
 function resolve(s, obj, arr) {
     if(!arr) arr = [];
-    return s.replace(ext1, function(s1, s2, s3) { var s = ["raygl", s3, obj.ns[s2].idx].join("_"); arr.push(s); return s; })
-         .replace(ext2, function(s1, s2) { var s = ["raygl", s2, obj.idx].join("_");  arr.push(s); return s;});
+    return s.replace(ext1, function(s1, s2, s3) { 
+        var nso = obj.ns[s2], idx;
+        var idx = nso.exported && nso.exported[s3] ? nso.exported[s3].idx:nso.idx;
+        var s = ["raygl", s3, idx].join("_"); arr.push(s); return s; 
+    }).replace(ext2, function(s1, s2) { var s = ["raygl", s2, obj.idx].join("_");  arr.push(s); return s;});
  }
 
 

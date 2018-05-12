@@ -128,13 +128,13 @@ function cmOpt(readOnly) {
     lineWrapping: true,
     extraKeys: {
       "Alt-Enter": function (cm) {
-        document.querySelector("apply").click();
+        document.querySelector("#apply").click();
       },
       "Ctrl-Space": "autocomplete",
     },
     hintOptions: {hint: hint},
     mode: "text/x-glsl",
-    readOnly: readOnly ? "nocursor":false,
+    readOnly: readOnly ? true:false,
     viewportMargin: Infinity
   }
 }
