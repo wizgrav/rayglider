@@ -157,14 +157,14 @@ float $length8( vec2 p )
 // A torus with a squarish minor cross section, using non-Euclidean distance function.
 float $sdTorus82( vec3 p, vec2 t )
 {
-    vec2 q = vec2(length2(p.xz)-t.x,p.y);
+    vec2 q = vec2($length2(p.xz)-t.x,p.y);
     return $length8(q)-t.y;
 }
 
 // A torus with squarish major and minor cross sections, using non-Euclidean distance function.
 float $sdTorus88( vec3 p, vec2 t )
 {
-    vec2 q = vec2(length8(p.xz)-t.x,p.y);
+    vec2 q = vec2($length8(p.xz)-t.x,p.y);
     return $length8(q)-t.y;
 }
 
