@@ -43,6 +43,7 @@ function toggle(el) {
 Array.prototype.forEach.call(buttons, function (b) {
   b.addEventListener("click", {
     code:function () {
+      document.querySelector("#tap").click();
       toggle(this);
     },
 
@@ -60,6 +61,7 @@ Array.prototype.forEach.call(buttons, function (b) {
     },
 
     full: function () {
+      document.querySelector("#tap").click();
       var element = State.canvas;
       if (element.requestFullscreen) {
         element.requestFullscreen();
@@ -82,6 +84,7 @@ Array.prototype.forEach.call(buttons, function (b) {
     },
 
     hd: function(){
+      document.querySelector("#tap").click();
       State.canvasScale = toggle(this) ? 0.5 : 1;
     }
   }[b.id])
@@ -134,7 +137,7 @@ function cmOpt(readOnly) {
     },
     hintOptions: {hint: hint},
     mode: "text/x-glsl",
-    readOnly: readOnly ? true:false,
+    readOnly: readOnly ? true :false,
     viewportMargin: Infinity
   }
 }

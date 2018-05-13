@@ -7,11 +7,12 @@ var CLIENT_ID = "56c4f3443da0d6ce6dcb60ba341c4e8d";
 var stream = null;
 
 var tapEl = document.querySelector("#tap");
-var userTapped = false;
+tapEl.userTapped = false;
 tapEl.addEventListener("click", function() {
+    if(tapEl.userTapped) return;
     audio.removeAttribute("muted");
     tapEl.style.display = "none";
-    userTapped = true;
+    tapEl.userTapped = true;
     audio.muted = false;
     State.clubber.context.resume();
 })
@@ -52,7 +53,7 @@ audio.onerror = function () {
       audio.currentSrc.match("blob:")  ?
       "Bad audio file"
       :  
-      "Soundcloud API limit reached, try again later.\nYou can also drop your own audio files in the page.\n\n"
+      "Soundcloud API limit reached, try again later.\n\n"
     );
     fallback();
 }
