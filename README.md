@@ -1,12 +1,15 @@
 # Rayglider
 
-Rayglider is a glsl sandbox geared for creative coding.
+Rayglider is a glsl sandbox that attempts to modernize glsl coding. 
 
-Every aspect of it is driven solely by the editor. In order to provide flexibility it supports RayGL, a glsl variant that utilizes special prefixes and directives to facilitate asset handling, flexible multi pass setup, code modularization and even a (limited) callback mechanism.
+Every aspect of it is driven solely by the editor via RayGL, a glsl variant that facilitates asset loading handling, multi pass setup, code modularization and even a (limited) callback mechanism. 
 
-The editor text can be exported, compressed, in the form of a long url that should be shortened in order to share and import it in other scripts. The limits on url length effectively contain individual scripts to ~4KB each but that's more than enough thanks to the modularization provided by RayGL. Complex demos can be made without the need for a server backend(Though technically the url shortening services become our backend, har har)
+Audio reactivity also gets some special love by integrating the Clubber library. High quality modulators can be defined in the editor using glsl and used to drive the visuals. It booms nicely.
 
-Finally, audio reactivity is provided by the Clubber library in the form of modulators that react to the currently playing music. These are also configured with glsl, but transpiled to js internally, and their values are made accesible in scripts via normalized float uniforms so you can make your demos boom efficiently and effortlessly :)
+The editor source can be exported, in the form of a long url. That should be shortened in order to share and even import it in other scripts. 
 
-## Documentation
+The limits on url length effectively contain individual scripts to ~4KB each but that's more than enough thanks to the modularization provided by RayGL. 
 
+Complex demos and prototypes can be composed in this way using the url shortening services as the storage backend. This scheme should scale well :) 
+
+ 

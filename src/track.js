@@ -87,7 +87,7 @@ var handleDrop = function(e) {
     e.preventDefault();
     e.stopPropagation();
     var objectUrl = URL.createObjectURL(e.dataTransfer.files[0]);
-    updateInfo("#", ev.dataTransfer.files[0].name);
+    updateInfo("#", e.dataTransfer.files[0].name);
     play(objectUrl, true);
 }
 
