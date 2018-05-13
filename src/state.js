@@ -9,5 +9,6 @@ module.exports = {
     context: null,
     paused: false,
     config: null,
+    cache: {},
     text: null
 };

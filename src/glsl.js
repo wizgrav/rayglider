@@ -135,8 +135,8 @@ CodeMirror.defineMode("glsl", function(config, parserConfig) {
         if (stream.eatSpace()) return null;
         curPunc = null;
         var style = (state.tokenize || tokenBase)(stream, state);
-        if (style == "comment" || style == "meta") return style;
         if (ctx.align == null) ctx.align = true;
+        if (style == "comment" || style == "meta") return style;
         if ((curPunc == ";" || curPunc == ":") && ctx.type == "statement") popContext(state);
         else if (curPunc == "{") pushContext(state, stream.column(), "}");
         else if (curPunc == "[") pushContext(state, stream.column(), "]");

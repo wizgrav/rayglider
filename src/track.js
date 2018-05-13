@@ -15,7 +15,9 @@ tapEl.addEventListener("click", function() {
     tapEl.userTapped = true;
     audio.muted = false;
     State.clubber.context.resume();
-})
+    document.body.classList.remove("muted");
+});
+
 function play (src, dropped) {
     var clubber = State.clubber;
 
@@ -43,9 +45,7 @@ function play (src, dropped) {
     }
     audio.src=src;
     audio.play();
-    if(!userTapped) {
-        tapEl.style.display = "flex";
-    }
+    
 }
 
 audio.onerror = function () {
@@ -127,6 +127,7 @@ module.exports = function (asset, config) {
     asset.ds.track.forEach(function(tr){
         tracks.push(tr[2]);
     });
+    if(!tapEl.userTapped) document.body.classList.add("muted");
     fallback();
     return function (t) {
         uniforms.iTrack[0] = audio.currentTime;

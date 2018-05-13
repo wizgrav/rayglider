@@ -1,4 +1,104 @@
 #import C < color >
+#import SDF < sdf >
+#import IQ < iq_sdf >
+#import CAM < camera >
+#import PHO < phong >
+  
+#track - < https://wizgrav.github.io/rayglider/assets/MGMT-Kids_She_XCL_RMX.mp3 >
+#boom B1 < mix($B1, pow(length($0.xz) * 0.7, 4), 0.2) >
+#boom B2 < mix($B2,pow(length($1.xz) * 0.7, 4),0.2) >
+#band 0 <t: 0 2 3 4; b: 12 36 32 127>
+#band 1 <t: 0 2 3 4; b: 36 60 32 127>
+#export sdf_map <vec2 (in vec3 p)>
+#export sdf_ray_steps <const int = 128>
+#export sdf_max_dist <const float = 64.>
+  
+float $iter = 0.;
+
+vec3 $CMOD;
+vec2 $sdf_map(in vec3 p) {
+  $iter++;
+  vec3 c = $CMOD;
+  vec3 q = mod(p,c)-0.5 * c;
+  vec3 r = vec3(0.1 + 3. * $B1, 0.1 + 2. * $B2, 2. * $B1 + 2. * $B2);
+  vec2 res = vec2(@IQ.sdSphere(q, r.x * 0.9), 0.);
+  res = @IQ.opU(res, vec2(@IQ.sdTorus( q, r.xy * 0.8 ), 1.));
+  return res;
+}
+
+void $main(inout vec4 fragColor, vec2 fragCoord) {
+  $CMOD = vec3(8. + $B1 * 4.,8. + $B2 * 4.,8. + $B1 * 4.);
+  vec3 ro = vec3(28., 10. + sin(iTime * 0.2 + $B2) * 40., 30.);
+  mat3 cam = @CAM.lookAt(ro, vec3(0.,$B1 ,0.), 0.66 * cos(iTime + $B2));
+  vec2 p = (-iRes.xy + 2.0*fragCoord)/iRes.y;
+  vec3 rd = cam * normalize( vec3(p.xy,1.0) );
+  vec2 res = @SDF.cast(ro, rd);
+  vec3 pt = ro + res.x * rd;
+  vec3 sky = mix(vec3(0.4), vec3(0.6 + 0.4 * $B2),rd.y);
+  vec3 col;
+  vec3 nor = @SDF.normals(pt);
+  vec3 hc = floor(  (pt + nor )/ $CMOD );
+  float fg = exp( -0.00001*res.x*res.x*res.x );
+  if(res.x >= $sdf_max_dist) {
+    col = sky +  vec3($iter / 60.) * fg;
+  } else {
+    @PHO.Surface s;
+    
+    vec3 sc = res.y < 0.5 ? @C.rgb2hsv(vec3(hc.zxy * 0.66)): vec3(0.66);
+    s.diffuse = sc;
+    s.specular = sc;
+    s.shiny = 12.;
+    s.normal = nor;
+    vec3 l = @PHO.direct(s, vec3(0.2 + 0.3 * $B2), vec3(1., 5., 3.));
+    l += @PHO.direct(s, vec3(0.5), vec3(-2., -5., 2.));
+    float ao = @SDF.occlusion(pt, nor);
+    
+    col = vec3(mix(0.1, 0.15 + 0.15 * $B2, s.normal.y)) * ao + l;
+    
+    col = mix( col, sky, 1.0-fg);
+  }
+ 
+  fragColor.rgb = col;
+}
+
+#pass ass < 0.5 0.5 float rel clamp repeat cube vmap map mips nomips noblend blend screen nop>
+#cube ass <google.com>
+#image ass <http://www.google.com>
+#video ass <www.google.com/asdfdf>
+#import S < sdf >
+#export sdf_minDist < const float = 1.0 >
+#boom bass < mix(@, smoothstep(0., 0.1, abs($0.x - $0.x)), 0.2) >
+#band 0 < t: [0,1,2,3], s: [0.01, 0.01, 0.01, 0.01], b: [1, 23, 100, 110], a: [0.5, 0.3, 0.4, 0.4] >
+#track asas <>
+#net asas <>
+
+
+#import P < phong >
+#import IQ < iq_sdf >
+#export sdf_map < vec2 (vec3 p) >
+#export sdf_steps < const int = 100 >
+#export state < void (inout mat4[4]) >
+
+
+vec2 $sdf_map(vec3 p) {
+    vec2 r = vec2( @IQ.sdTorus(p, vec2(10., 1.)), 1.0);
+    r = @IQ.opU(r, @IQ.sdBox(p, vec3(1. 5. 8.)));
+    return r;
+}
+
+void $main(out vec4 c, in vec2 uv) {
+	@P.Surface s;
+    vec2 dm = @S.march(vec3(0.), vRay, s.point);
+    s.normals = @S.norm(s.point);
+    s.specular = vec3(0., 0.5,0.2);
+    s.diffuse = vec3(0., 0.5,0.2);
+    s.shiny = 60.;
+    vec3 l = @P.direct(s, vec3(0.33, 0.22, 0.3), vec3(0.33, 0.22, 0.3));
+    c.xyz = l * @S.shadow(s.point);
+    c.xyz += vec3(0.2) * @S.ao();
+}
+
+#import C < color >
 
 void $main(out vec4 c, in vec2 fc) {
     vec2 uv = fc / iRes.xy;

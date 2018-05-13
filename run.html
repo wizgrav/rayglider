@@ -98,7 +98,7 @@
       }
 
       #header .buttons a {
-        font-weight:bold;
+        text-shadow: 0.2vh 0.2vh black; 
       }
       #header img {
         vertical-align: middle;
@@ -171,107 +171,18 @@
         z-index: 0;
       }
       
-      input, select {
-        font-weight: bold;
-        font-size: 1.33vh;
-        font-family:'Roboto Mono', monospace;
-        vertical-align: middle;
-        background-color: #eee;
-      }
-      #editor input[type=text]{
-        background-color: transparent;
-        color: rgba(32,32,32,0.96);
-        display:inline-block;
-        border: 0.2vh solid #ccc;
-        font-family:'Roboto Mono', monospace;;
-        font-weight: bold;
-        width:99vw;
-        margin-top:0;
-        padding: 0.1%;
-      }
-      #editor input[type=checkbox]{
-        z-index:1;
-        height:1.6vh;
-        position:absolute;
-        right:0;
-        top: 0;
-        bottom: 0;
-        margin:auto;
-      }
-
-      input[type=number] {
-        border-radius: 0.33vh;
-        border: 0;
-        background-color: rgba(255,255,255,0.9);
-        padding: 0.33vh;
-      }
-
-      #editor > div > button {
-        z-index: 1;
-        height: 1.8vh;
-        font-size: 1.2vh;
-        width: 3.33vh;
-        position: absolute;
-        right: 2vh;
-        top: 0;
-        padding: 0;
-        border-radius: 0.33vh;
-        border: none;
-        bottom: 0;
-        margin: auto;
-      }
-
-      #editor div.red input[type=text]{
-        color: rgb(0, 36, 36);
-      }
-      #editor div.green input[type=text]{
-        color: rgb(36, 0, 36);
-      }
-      #editor div.blue input[type=text]{
-        color: rgb(36, 36, 0);
-      }
-        #editor div.alpha input[type=text]{
-        color: rgb(32, 32, 32);
-      }
-
-      #editor div.red{
-        background-color: rgba(255, 220, 220, 0.98);
-      }
-      #editor div.green{
-        background-color: rgba(220, 255, 220, 0.98);
-      }
-      #editor div.blue{
-        background-color:  rgba(220, 220, 255, 0.98);
-      }
-        #editor div.alpha{
-        background-color:  rgba(255, 255, 255, 0.98);
-      }
-        #editor > div {
-          overflow:hidden;
-        }
-      #editor > div > div {
-        background-color: rgba(200,200,200,0.66);
-        border-left: 0.16vh solid rgba(255,255,255,0.33);
-        position: absolute;
-        z-index: -1;
-        width: 50vw;
-        height: 100%;
-        right:0;
-        top:0;
-        
-      }
       
      
       #header a {
         text-decoration: none;
         vertical-align: middle;
-        opacity: 0.9;
+        opacity: 0.96;
         transition: opacity 0.1s;
-        text-shadow: 0.1vh 0.1vh #333;
+        text-shadow: 0.2vh 0.2vh #000;
         margin-left: 1vw;
       }
       #info a {
-        opacity: 0.9;
+        opacity: 0.96;
       }
       #header a:hover {
         text-shadow: 0.2vh 0.2vh #333;
@@ -331,8 +242,8 @@
       }
       
       .CodeMirror {
-        height: auto;
-        background-color: rgba(255, 255, 255, 0.99);
+        height: 79vh;
+        background-color: rgba(255, 255, 255, 0.94);
       }
       .CodeMirror span{
         font-family: 'Roboto Mono', monospace;
@@ -418,7 +329,7 @@
       }
       
       #state:after {
-        content: "State";
+        content: "Save";
       }
 
       #state, #state.wait {
@@ -426,7 +337,7 @@
       }
 
       #state.wait:after {
-        content: "Wait..";
+        content: "Wait!";
       }
 
       #state.good {
@@ -455,6 +366,10 @@
         justify-content: center;
       }
       
+      body.muted #tap {
+        display: flex;
+      }
+
       #tap div {
         color: white;
         font-size: 6.66vh;
@@ -466,13 +381,14 @@
 
     <body>
       
-      <div id="audio" title="Alt-P toggles play/pause. Alt-<KLNM> seeks -/+ 5 and -/+ 30 sec. Page also accepts drag & drop of audio files. WARNING: The volume control affects the measurements.">    
+      <div id="audio" title="WARNING: The volume control affects the measurements.">    
         
       </div>
       <div id="header" >
         <img id="logo" title="Rayglider &copy; 2018 Yannis Gravezas <wizgrav@gmail.com>" src="./favicon.png"/>
         <div class="buttons" title="Alt+<Letter> toggles buttons. The State link's url contains a snapshot of the current state.">
         
+        <button accesskey="N" id="create">NEW</button>
         <button accesskey="F" id="full">FULL</button>
         <button accesskey="H" id="hd">HD</button>
         <button accesskey="C" id="code" class="disabled">CODE</button>

@@ -1,6 +1,8 @@
 
 var CM = require("codemirror");
 require("codemirror/addon/hint/show-hint");
+require("codemirror/addon/edit/matchbrackets");
+require("codemirror/addon/edit/closebrackets");
 require('./glsl');
 var util = require('./util');
 var State = require("./state");
@@ -40,11 +42,14 @@ function toggle(el) {
   return el.classList.contains("disabled");
 }
 
+var Buttons = {};
 Array.prototype.forEach.call(buttons, function (b) {
+  Buttons[b.id] = b;
   b.addEventListener("click", {
     code:function () {
       document.querySelector("#tap").click();
       toggle(this);
+      cm.refresh();
     },
 
    reset: function () {
@@ -81,11 +86,16 @@ Array.prototype.forEach.call(buttons, function (b) {
     split: function(){
       toggle(this);
       cm.refresh();
+      //cs.refresh();
     },
 
     hd: function(){
       document.querySelector("#tap").click();
       State.canvasScale = toggle(this) ? 0.5 : 1;
+    },
+
+    create: function(){
+     window.open("run.html");
     }
   }[b.id])
 });
@@ -129,16 +139,17 @@ function cmOpt(readOnly) {
   return {
     lineNumbers: true,
     lineWrapping: true,
+    autoCloseBrackets:true,
+    matchBrackets: true,
     extraKeys: {
       "Alt-Enter": function (cm) {
         document.querySelector("#apply").click();
-      },
-      "Ctrl-Space": "autocomplete",
+      }
     },
-    hintOptions: {hint: hint},
+    //hintOptions: {hint: hint},
     mode: "text/x-glsl",
     readOnly: readOnly ? true :false,
-    viewportMargin: Infinity
+    //viewportMargin: Infinity
   }
 }
 
@@ -146,26 +157,31 @@ var cm = CM(document.querySelector("#main"), cmOpt());
 var cs = CM(document.querySelector("#side"), cmOpt(true));
 
 var applyButton = document.querySelector("#apply");
-cm.on("change", function(cm, change) { applyButton.classList.remove("disabled"); })
+cm.on("change", function(cm, change) { applyButton.classList.remove("disabled"); });
 
 
 document.querySelector('#main').addEventListener("click", function(e) {
   if(e.target.classList.contains('cm-link'))  {
     var s = e.target.textContent;
-    // window.console.log(s );
     if(s[0] === "@") {
       var o = State.config.imports[""];
       s = s.replace("@", "");
       o = o.ns[s];
-      if(o && o.origText) {
-        cs.setValue(o.origText);
+      s = o.origText;
+      if(!o || !o.origText) {
+        return;
       }
     } else if (s in State.config.imports) {
       s = State.config.imports[s].origText;
-      if(s) cs.setValue(s);
+      if(!s) return;
     } else {
       open(s, "Rayglider");
+      return;
     }
+    if(document.body.classList.contains("split")) {
+      Buttons["split"].click();
+    }
+    cs.setValue(s);
   }
 })
 
@@ -228,12 +244,18 @@ if(!src) {
 } else{
   util.lzma.decompress(util.atob(src), function(res){ State.text = res; cm.setValue(res);  }, function(){});
 }
+cm.refresh();
 
 module.exports = function (err) {
   if(err) {
+    if(document.body.classList.contains("split")) {
+      Buttons["split"].click();
+    }
     document.body.classList.add("error");
     cs.setValue(err);
     cs.execCommand("goDocEnd");
+    
+    
   } else {
     document.body.classList.remove("error");
     cs.setValue("");

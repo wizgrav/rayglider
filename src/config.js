@@ -42,7 +42,7 @@ var rext = util.rext;
 
 var left = 0;
 
-function createObj() {
+function createObj(sid) {
     return {
         outgoing: [],
         ds: {
@@ -54,7 +54,8 @@ function createObj() {
         booms: {},
         bands: {},
         text: "",
-        type: "import"
+        type: "import",
+        sid: sid
     }
 }
 
@@ -62,7 +63,7 @@ function parse(t, u) {
     if(!t) return;
     var obj = config.imports[u], arr, ds;
     if(!obj) {
-        obj = createObj();
+        obj = createObj(u);
     }
     if(!obj.text) {
         var ta = [];
@@ -129,14 +130,21 @@ function parse(t, u) {
         
         left++;
 
-        imp[sm] = obj.ns[m[1]] = createObj();
+        imp[sm] = obj.ns[m[1]] = createObj(sm);
 
         imp[sm].outgoing.push(u);
 
         if(sm.split(".").length === 1) {
-            fetch("shaders/lib/" + sm).then(function(r){
-                r.text().then(function(s) { parse(s, sm); } )
-            });
+            if(State.cache[sm]) {
+                parse(State.cache[sm], sm);
+            } else {
+                fetch("shaders/lib/" + sm).then(function(r){
+                    r.text().then(function(s) { 
+                        State.cache[sm] = s;
+                        parse(s, sm); 
+                    } );
+                });
+            }
         } else {
             var ss = window.localStorage.getItem(sm);
             if(ss) {
@@ -203,10 +211,19 @@ function finalize() {
             p.idx = idx++;
             p.parent = a;
             if(p.main){ mainPass.data = p.data; return; };
-            if(!p.nop) head.push(resolve("uniform sampler2D $tex;\n\n", p));
+            if(!p.nop){ 
+                head.push("\n// tex: " + o); 
+                head.push(resolve("uniform sampler2D $tex;\n\n", p));
+            }
             passes.push(p);
         });
-        a.ds.boom.forEach(function(v) { head.push(resolve("uniform float $" + v[1] + ";\n\n", a)); });
+        
+        if(a.ds.boom.length) head.push("\n// boom: " + o); 
+        
+        a.ds.boom.forEach(function(v) {
+            head.push(resolve("uniform float $" + v[1] + ";\n\n", a)); 
+        });
+        body.push("\n// body: " + o);
         body.push(resolve(a.text,a));
         if(o === ""){
             passes.push(mainPass);
@@ -217,6 +234,7 @@ function finalize() {
         var o = config.exports[k];
         var s = o.exports[k];
         var a = s.split("(");
+        head.push("\n// exported: " + o.sid);
         if(a.length > 1) {
             head.push([a[0], resolve("$" + k, o) + "(", a[1], ";\n"].join(" "));
             return;
