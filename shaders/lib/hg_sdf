@@ -590,8 +590,8 @@ float $fOpIntersectionChamfer(float a, float b, float r) {
 }
 
 // Difference can be built from Intersection or Union:
-float fOpDifferenceChamfer (float a, float b, float r) {
-	return fOpIntersectionChamfer(a, -b, r);
+float $fOpDifferenceChamfer (float a, float b, float r) {
+	return $fOpIntersectionChamfer(a, -b, r);
 }
 
 // The "Round" variant uses a quarter-circle to join the two objects smoothly:
@@ -614,7 +614,7 @@ float $fOpIntersectionRound(float a, float b, float r) {
 }
 
 float $fOpDifferenceRound (float a, float b, float r) {
-	return fOpIntersectionRound(a, -b, r);
+	return $fOpIntersectionRound(a, -b, r);
 }
 
 
@@ -623,7 +623,7 @@ float $fOpUnionColumns(float a, float b, float r, float n) {
 	if ((a < r) && (b < r)) {
 		vec2 p = vec2(a, b);
 		float columnradius = r*sqrt(2.)/((n-1.)*2.+sqrt(2.));
-		pR45(p);
+		$pR45(p);
 		p.x -= sqrt(2.)/2.*r;
 		p.x += columnradius*sqrt(2.);
 		if (mod(n,2.) == 1.) {
@@ -632,7 +632,7 @@ float $fOpUnionColumns(float a, float b, float r, float n) {
 		// At this point, we have turned 45 degrees and moved at a point on the
 		// diagonal that we want to place the columns on.
 		// Now, repeat the domain along this direction and place a circle.
-		pMod1(p.y, columnradius*2.);
+		$pMod1(p.y, columnradius*2.);
 		float result = length(p) - columnradius;
 		result = min(result, p.x);
 		result = min(result, a);
@@ -651,7 +651,7 @@ float $fOpDifferenceColumns(float a, float b, float r, float n) {
 		float columnradius = r*sqrt(2.)/n/2.0;
 		columnradius = r*sqrt(2.)/((n-1.)*2.+sqrt(2.));
 
-		pR45(p);
+		$pR45(p);
 		p.y += columnradius;
 		p.x -= sqrt(2.)/2.*r;
 		p.x += -columnradius*sqrt(2.)/2.;
@@ -659,7 +659,7 @@ float $fOpDifferenceColumns(float a, float b, float r, float n) {
 		if (mod(n,2.) == 1.) {
 			p.y += columnradius;
 		}
-		pMod1(p.y,columnradius*2.);
+		$pMod1(p.y,columnradius*2.);
 
 		float result = -length(p) + columnradius;
 		result = max(result, p.x);
@@ -678,13 +678,13 @@ float $fOpIntersectionColumns(float a, float b, float r, float n) {
 float $fOpUnionStairs(float a, float b, float r, float n) {
 	float d = min(a, b);
 	vec2 p = vec2(a, b);
-	pR45(p);
+	$pR45(p);
 	p = p.yx - vec2((r-r/n)*0.5*sqrt(2.));
 	p.x += 0.5*sqrt(2.)*r/n;
 	float x = r*sqrt(2.)/n;
-	pMod1(p.x, x);
+	$pMod1(p.x, x);
 	d = min(d, p.y);
-	pR45(p);
+	$pR45(p);
 	return min(d, $vmax(p -vec2(0.5*r/n)));
 }
 

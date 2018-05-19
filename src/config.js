@@ -259,12 +259,14 @@ function finalize() {
         config.prepass.push(ast);
     });
 
+    var bm;
     order.forEach(function(o, i) {
         var a = config.imports[o];
-        var bm = boom(a, config);
-        if(bm) config.prepass.push(bm);
+        bm = boom(a, config);
     });
-
+    
+    if(bm) config.prepass.push(bm);
+    
     var trk = track(config.imports[""], config);
 
     if(trk) config.prepass.push(trk);

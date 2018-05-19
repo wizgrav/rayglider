@@ -28,6 +28,9 @@ var head = [
     ""
 ];
 
+var currentTime;
+var ret = { bands: [], booms: []}, lret;
+
 module.exports = function (asset, config) {
     var uniforms = config.uniforms; 
     var head = [
@@ -66,14 +69,13 @@ module.exports = function (asset, config) {
         var us = util.resolve("$" + b[1], asset);
         head.push(["uniform vec4 ", us ,";"].join(""));
         bands[us] = State.clubber.band(obj);
-        uniforms[us] = new Float32Array(4);
+        bands[us].target = uniforms[us] = new Float32Array(4);
     });
     
-    var bandNames = Object.keys(bands);
-
+    
     var used = false;
     
-    var exec = ["for(var step=1000/clubber.fps; currentTime < clubber.time; currentTime += step){"];
+    var exec = [];
 
     var extra = {};
 
@@ -89,19 +91,35 @@ module.exports = function (asset, config) {
     
     Object.keys(extra).forEach(function (v) { head.unshift(["uniform float ", v,";"].join("")); });
 
-    if(!used) return false;
+    if(used){
 
-    var currentTime = 0;
-    exec.push("}");
-    exec.push("return currentTime;");
-    
-    var src = [transpile( head.join("\n") ), exec.join("\n")].join("\n");
+        Object.keys(bands).forEach(function(b) { ret.bands.push(bands[b]); })
+        
+        var src = [transpile( head.join("\n") ), exec.join("\n")].join("\n");
 
-    var fn = new Function("uniforms", "currentTime", "clubber", src);
+        ret.booms.push(new Function("uniforms", "clubber", src));
+    }
+
+   
 
     return function (t) {
-        if(!currentTime) currentTime = State.currentTime;
-        bandNames.forEach(function(b) { bands[b](uniforms[b]); });
-        currentTime = fn(uniforms, currentTime, State.clubber);
+        if(t === false || !lret) {
+            lret = ret;
+            ret = { bands: [], booms: []};
+            currentTime = 0;
+        }
+        var cl = State.clubber, step = 1000 / cl.fps;
+        
+        if(!currentTime) currentTime = cl.time;
+        
+        var tmax = cl.time;
+        cl.time = currentTime;
+
+        for ( ; cl.time < tmax; cl.time += step) {
+            lret.bands.forEach(function(b){ b(b.target); });
+            lret.booms.forEach(function(b){ b(uniforms, cl); });
+        }
+
+        currentTime = cl.time;
     }
 }

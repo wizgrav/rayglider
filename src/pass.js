@@ -89,9 +89,10 @@ module.exports = function (asset, config) {
     var uniforms = config.uniforms; 
     var gl = State.context;
     var us1 = util.resolve("$tex", asset);
+    var us2 = util.resolve("$inf", asset);
     var arr = asset.data.split(" ");
 
-    var opts = {}, coords = [], funcs, eqs, fmin, fmag, wrap;
+    var opts = {}, coords = [], funcs, eqs, fmin, fmag, wrap, mips = 0, vmap = false;
 
     arr.forEach(function (v) {
         var n = parseFloat(v);
@@ -108,6 +109,11 @@ module.exports = function (asset, config) {
                 fmin = v.split("-").map(function (s) { return s.toUpperCase(); }).shift();
             } else if(!v.indexOf("wrap-")) {
                 wrap = v.split("-").shift().map(function(v){ return gl[Wrap[v]]; });
+            } else if(!v.indexOf("map-")){
+                mips = parseInt(v.split("-")[1]);
+            } else if(!v.indexOf("vmap-")){
+                mips = parseInt(v.split("-")[1]);
+                vmap = true;
             } else {
                 opts[v] = true;
             }
@@ -142,7 +148,8 @@ module.exports = function (asset, config) {
 
     if(coords.length < 4) coords[2] = coords[3] = 0;
 
-    var fbs = [];
+    var fbs = [], mfbs = [], inf = {};
+    inf[us2] = new Float32Array(4);
 
     if(!opts.screen && !opts.nop) {
         var flmin = gl[opts.mips ? fmin.join("_MIPMAP_"): fmin[0]];
@@ -150,8 +157,13 @@ module.exports = function (asset, config) {
         var att = [
             {type: ft, min:flmin, mag:gl[fmag], wrapS: wrap[0], wrapT: wrap[1], flipY: opts.flip, auto: opts.mips, target: opts.cube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D}
         ]
+        for(var i=0; i < mips; i++) {
+            mfbs.push(twgl.createFramebufferInfo(gl, att));
+        }
+        
         fbs.push(twgl.createFramebufferInfo(gl, att));
         fbs.push(twgl.createFramebufferInfo(gl, att));
+        
     }
 
     var width = 0, height = 0, offsetX, offsetY;
@@ -163,6 +175,14 @@ module.exports = function (asset, config) {
             offsetX = coords[2];
             offsetY = coords[3];
         }
+        mfbs.forEach(function(fb) {
+            twgl.resizeFramebufferInfo(gl, fb, att, width, height);
+            if(!vmap) width = Math.floor(width * 0.5);
+            height = Math.floor(height * 0.5);   
+        });
+        fbs.forEach(function(fb){
+            twgl.resizeFramebufferInfo(gl, fb, att, width, height);   
+        });
     } else {
         resize();
     }
@@ -235,29 +255,45 @@ module.exports = function (asset, config) {
         }
 
         var fc = uniforms.iFrame;
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fbs.length ? fbs[fc & 1].framebuffer : null);
         gl.useProgram(prog.program);
         var view = [offsetX, offsetY, width, height]
         gl.viewport(view[0], view[1], view[2], view[3]);
         uniforms.iView.set(view);
         twgl.setBuffersAndAttributes(gl, prog, buf);
         twgl.setUniforms(prog, uniforms);
-        if(opts.cube) {
-            for(var i=0; i < 6; i++){
-                twgl.setUniforms(prog, { iFace: i });
-                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X+i, fbs[fc & 1].attachment[0], 0);
-                twgl.drawBufferInfo(gl, buf);
-            }
-        } else {
-            twgl.drawBufferInfo(gl, buf);
-        }
+        
+        var lastFb = null;
+
+        mfbs.forEach(function(fb) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fb.framebuffer);
+            draw(fb.attachments[0]);
+            uniforms[us1] = fb.attachments[0];
+        });
+        
+        var fb = fbs.length ? fbs[fc & 1] : null;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb ? fb.framebuffer : null);
+        draw(fb ? fb.attachments[0] : null);
+
         if(fbs.length) {
-            uniforms[us1] = fbs[fc & 1].attachments[0];
+            uniforms[us1] = fb.attachments[0];
             if(opts.mips) {
                 var tr = opts.cube ? gl.TEXTURE_CUBE_MAP: gl.TEXTURE_2D;
                 gl.bindTexture(tr, uniforms[us1]);
                 gl.generateMipmaps(tr);
             }
         }
+
+        function draw(tex) {
+            if(opts.cube && tex) {
+                for(var i=0; i < 6; i++){
+                    twgl.setUniforms(prog, { iFace: i });
+                    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X+i, tex, 0);
+                    twgl.drawBufferInfo(gl, buf);
+                }
+            } else {
+                twgl.drawBufferInfo(gl, buf);
+            }
+        }
+        
     }
 }
