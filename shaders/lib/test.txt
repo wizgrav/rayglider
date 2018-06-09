@@ -1,36 +1,126 @@
-#pass ass < 0.5 0.5 float rel clamp repeat cube vmap map mips nomips noblend blend screen nop>
-#cube ass <google.com>
-#image ass <http://www.google.com>
-#video ass <www.google.com/asdfdf>
-#import S < sdf >
-#export sdf_minDist < const float = 1.0 >
-#boom bass < mix(@, smoothstep(0., 0.1, abs($0.x - $0.x)), 0.2) >
-#band 0 < t: [0,1,2,3], s: [0.01, 0.01, 0.01, 0.01], b: [1, 23, 100, 110], a: [0.5, 0.3, 0.4, 0.4] >
-#track asas <>
-#net asas <>
+// The Garden of Jouls
+// by wizgrav
+#import C < color >
+#import SDF < sdf >
+#import CAM < camera >
+#import PHO < phong >
+#import WOR < noise/worley2D >  
+#export sdf_map <vec2 (in vec3 p)>
+#export sdf_ray_steps <const int = 128>
+#export sdf_max_dist <const float = 48.>
+#boom B0 < mix($B0, smoothstep(0.0, 0.2, length(abs($0.yw - $0.xz))), 0.08) >
+#boom B1 < mix($B1, smoothstep(0.0, 0.2, length(abs($1.xz - $1.yw))), 0.08)>
+#boom B2 < mix($B2, smoothstep(0.0, 0.1, length(abs($2.xz - $2.yw))), 0.06) >
+#boom B3 < mix($B3, smoothstep(0.0, 0.1, length(abs($3.xz - $3.yw))), 0.06) >
+#band 0 < b: 12 48 64 128;t: 0 0 4 4;s: 0.1 -0.1 0.1 -0.1;a: 1 1 1 1 >
+#band 1 < b: 36 60 48 128;t: 0 0 4 4;s: 0.1 -0.1 0.1 -0.1;a: 1 1 1 1 >
+#band 2 < b: 60 96 16 128;t: 0 0 4 4;s: 0.1 -0.1 0.1 -0.1;a: 1 1 1 1 >
+#band 3 < b: 84 108 1 96;t: 0 0 4 4;s: 0.1 -0.1 0.1 -0.1;a: 1 1 1 1 >
+#import DB < debug >
+#post PD < view: 0.2 0.2 0.4 0.1; screen; rel; blend; func: sra msa >
 
+vec3 $CMOD;
 
-#import P < phong >
-#import IQ < iq_sdf >
-#export sdf_map < vec2 (vec3 p) >
-#export sdf_steps < const int = 100 >
-#export state < void (inout mat4[4]) >
-
-
-vec2 $sdf_map(vec3 p) {
-    vec2 r = vec2( @IQ.sdTorus(p, vec2(10., 1.)), 1.0);
-    r = @IQ.opU(r, @IQ.sdBox(p, vec3(1. 5. 8.)));
-    return r;
+vec4 $rand(vec2 n) {
+  return fract( vec4(1.0, 255.0, 65025.0, 16581375.0) * fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453));
 }
 
-void $main(out vec4 c, in vec2 uv) {
-	@P.Surface s;
-    vec2 dm = @S.march(vec3(0.), vRay, s.point);
-    s.normals = @S.norm(s.point);
-    s.specular = vec3(0., 0.5,0.2);
-    s.diffuse = vec3(0., 0.5,0.2);
-    s.shiny = 60.;
-    vec3 l = @P.direct(s, vec3(0.33, 0.22, 0.3), vec3(0.33, 0.22, 0.3));
-    c.xyz = l * @S.shadow(s.point);
-    c.xyz += vec3(0.2) * @S.ao();
+float $smin( float a, float b, float k )
+{
+    float h = clamp( 0.5+0.5*(b-a)/k, 0.0, 1.0 );
+    return mix( b, a, h ) - k*h*(1.0-h);
+}
+
+vec2 $sdf_map(in vec3 p) {
+  p.xyz = p.xzy;
+  vec3 c = $CMOD;
+  vec3 q = mod(p,c)-0.5 * c;
+  vec3 z = q;
+  vec3 dz=vec3(0.0);
+  vec3 fl = floor((p-q) / $CMOD) * $CMOD;
+  vec4 r4 = $rand( fl.xy );
+  float power = 8.0 + 2. * floor(4. * r4.x);
+  float r, theta, phi;
+  float dr = 1.0;
+  float t0 = 1.0;
+  for(int i = 0; i < 4; ++i) {
+    r = length(z);
+    if(r > 2.0) continue;
+    theta = atan(z.y / z.x) ;
+    phi = asin(z.z / r)  + iTime * 0.3  + 0.9 * mix($B0,1. - $B1, 0.66 + r4.x * 0.33);
+    
+
+    dr = pow(r, power - 1.) * dr * power + 1. ;
+
+    r = pow(r, power);
+    theta = theta * power;
+    phi = phi * power;
+
+    z = r * vec3(cos(theta)*cos(phi), sin(theta)*cos(phi), sin(phi)) + q;
+    power +=  2. * floor(4. * r4.y) + r4.x * 0.5;
+    t0 = min(t0, r);
+    r4.xyzw = r4.yzwx;
+   }
+  float rz = 0.5 * log(r) * r / dr;
+  rz = $smin(q.z , rz, 0.24);
+  return vec2(rz, mix( 0.1, t0, abs(q.z) * 0.96 ));
+}
+
+float fbm(vec2 uv) {
+    float amp = 1., freq = 6., asum = 0., res = 0.;
+    for(int i=0; i < 3; i++) {
+        res += @WOR.noise(uv * freq , 1., false).x * amp;
+        asum += amp;
+        freq *= 2.;
+        amp *= 0.5;
+    }
+    return res / asum;
+}
+
+void $main(inout vec4 fragColor, vec2 fragCoord) {
+  vec4 bms = vec4($B0,$B1,$B2, $B3);
+  #if defined @PD.PASS
+    fragColor = @DB.bars(bms, (fragCoord - iView.xy) / iView.zw );
+  	fragColor.a = 0.66;
+  #else
+    
+  $CMOD = vec3(2.9 ,2.9,0. );
+  vec3 ro = vec3(4. + iTime * 0.33, 1.7 , 2.9);
+  mat3 cam = @CAM.lookAt(ro, ro + vec3(4.,-6. ,0.), 0.);
+  vec2 p = (-iRes.xy + 2.0*fragCoord)/iRes.y;
+  vec3 rd = cam * normalize( vec3(p.xy,1.0) );
+  vec2 res = @SDF.cast(ro, rd);
+  vec3 pt = ro + res.x * rd;
+  vec3 sky = mix(vec3(0.4), vec3(0.6 + 0.4),rd.y);
+  vec3 col;
+  vec3 nor = @SDF.normals(pt);
+  vec3 hc = floor((pt + nor )/ $CMOD );
+  if(res.x >= $sdf_max_dist) {
+    col = sky;
+  } else {
+    @PHO.Surface s;
+    float z = 0.;
+    float mz = $sdf_map(vec3( pt.x, 1.0, pt.z)).x;
+    float q = fbm(pt.xz * 0.1);
+    z =  fbm(pt.xz * 0.2 + vec2(0.01, 0.02) * iTime + vec2(0.2 * $B1,0.2 * $B2)  + q);
+    vec3 p = vec3(pt.x, 0.025 * z, pt.z );
+    vec3 nor2 = normalize(cross(dFdx(p),dFdy(p)));
+    float f = smoothstep(0., 0.1, pt.y);
+    nor = mix(nor2, nor, f);
+    s.diffuse = vec3(@C.hsv2rgb(vec3(pow(res.y, 2.) ,   1. - res.y,  0.66 -  z * (1. - f)  )));
+    s.specular = vec3(0.9);
+    s.shiny = 32. * res.y;
+    s.normal = nor;
+    vec3 nv = normalize(vec3(2., 6., 2.));
+    float att = max(0.33, length(pow(bms,vec4(1.33))));
+    vec3 l = @PHO.direct(s, vec3(att), nv);
+    float ao = @SDF.occlusion(pt, nor);
+    col = mix(#001111, #333233 , s.normal.y) * ao * att + l * @SDF.shadow( pt, nv, 0.1, 4.0 ); 
+    
+    col = pow(col, vec3(1./2.2));
+     
+  }
+  
+  fragColor.rgb = col;
+  #endif
 }

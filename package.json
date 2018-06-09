@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/wizgrav/rayglider#readme",
   "dependencies": {
-    "twgl-base.js": "^4.4.0",
+    "twgl.js": "^4.4.0",
     "glsl-transpiler": "^1.5.8",
     "codemirror": "^5.37.0",
     "clubber": "^1.7.1",

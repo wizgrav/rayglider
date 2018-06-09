@@ -55,17 +55,16 @@ module.exports = function (asset, config) {
     var bands = {};
     asset.ds.band.forEach(function(b){
         var rep = {s: "smooth", a: "adapt", t: "template", b: "bounds"};
-        var obj = {};
-        b[2].split(";").forEach(function(o) {
-            var ar = o.split(":");
-            obj[rep[ar[0].trim()]] = ar[1].trim().split(" ").map(function(v){ return parseFloat(v); });
-        });
+        var obj = util.parseStyle(b[2]);
+        for(var k in rep) obj[rep[k]] = obj[k];
+        
         if(obj.bounds) {
             obj.from = obj.bounds[0];
             obj.to = obj.bounds[1];
             obj.low = obj.bounds[2];
             obj.high = obj.bounds[3];
         }
+
         var us = util.resolve("$" + b[1], asset);
         head.push(["uniform vec4 ", us ,";"].join(""));
         bands[us] = State.clubber.band(obj);
@@ -84,6 +83,7 @@ module.exports = function (asset, config) {
         var us = resolve("$" + b[1], asset);
         var ub = resolve(b[2], asset, arr);
         if(uniforms[us]) used = true;
+        uniforms[us] = 1;
         arr.forEach(function(v){ extra[v] = true });
         head.push("float f" + b[1] + "(void){ return " + ub + ";}");
         exec.push("uniforms." + us + " = f" + b[1] + "();");
@@ -110,7 +110,7 @@ module.exports = function (asset, config) {
         }
         var cl = State.clubber, step = 1000 / cl.fps;
         
-        if(!currentTime) currentTime = cl.time;
+        if(!currentTime || Math.abs(currentTime - cl.time) > 1000) currentTime = cl.time;
         
         var tmax = cl.time;
         cl.time = currentTime;

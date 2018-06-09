@@ -28,11 +28,15 @@ var fsHead = [
     "",
     "uniform int iFace;",
     "",
+    "uniform int iPass;",
+    "",
     "uniform vec2 iTrack;",
     "",
     "uniform vec4 iView;",
     "",
     "uniform vec3 iRes;",
+    "",
+    "uniform mat4 iCam;",
     "",
     "uniform vec4 iMouse;",
     "",
@@ -92,34 +96,25 @@ module.exports = function (asset, config) {
     var us2 = util.resolve("$inf", asset);
     var arr = asset.data.split(" ");
 
-    var opts = {}, coords = [], funcs, eqs, fmin, fmag, wrap, mips = 0, vmap = false;
+    var opts = util.parseStyle(asset.data), coords = [], funcs, eqs, clear, fmin, fmag, wrap, mips = 0, vmap = false, rmap = false, vray=false;
 
-    arr.forEach(function (v) {
-        var n = parseFloat(v);
-        if(isNaN(n)) {
-            if(!v.indexOf("func-")){
-                funcs = v.split("-").shift().map(function(v){ return gl[Funcs[v]]; });
-                opts.blend = true;
-            } else if(!v.indexOf("eq-")) {
-                eqs = v.split("-").shift().map(function(v){ return gl[Eqs[v]]; });
-                opts.blend = true;
-            } else if(!v.indexOf("mag-")) {
-                fmag = v.split("-")[1];
-            } else if(!v.indexOf("min-")) {
-                fmin = v.split("-").map(function (s) { return s.toUpperCase(); }).shift();
-            } else if(!v.indexOf("wrap-")) {
-                wrap = v.split("-").shift().map(function(v){ return gl[Wrap[v]]; });
-            } else if(!v.indexOf("map-")){
-                mips = parseInt(v.split("-")[1]);
-            } else if(!v.indexOf("vmap-")){
-                mips = parseInt(v.split("-")[1]);
-                vmap = true;
-            } else {
-                opts[v] = true;
-            }
-        } else {
-            coords.push(n);
-        }
+    Object.keys(opts).forEach(function (k) {
+        var v = opts[k];
+        switch(k) {
+            case "view": coords = v; break;
+            case "func": funcs = v.map(function(v){ return gl[Funcs[v]]; }); break;
+            case "eq": eqs = v.map(function(v){ return gl[Eqs[v]]; }); break;
+            case "mag": fmag = v[0].toUpperCase(); break;
+            case "min": fmin = v.map(function (s) { return s.toUpperCase(); }); break;
+            case "wrap": wrap = v.map(function(v){ return gl[Wrap[v]]; }); break;
+            case "map": mips = parseInt(v[0]); break;
+            case "vmap": mips = parseInt(v[0]); vmap = true; break;
+            case "rmap": mips = parseInt(v[0]); rmap = true; break;
+            case "clear": clear = v.map(function(v){ return parseFloat(v); }); break;
+            case "vray":  vray = parseInt(v[0]); break;
+            default: break;
+        }  
+        
     });
 
     if(!fmin) {
@@ -190,7 +185,15 @@ module.exports = function (asset, config) {
     var prog = null;
 
     if(!asset.nop) {
-        fs = [State.header, "#define " + resolve("$PASS", asset) + " 1" , fsHead, config.text, resolve(fsFoot, asset.parent)].join("\n");
+        var defines = [ "#define " + resolve("$PASS", asset) + " 1" ];
+        if(vray) defines.push("#define ENABLE_VRAY 1");
+
+        fs = [
+            State.header,
+            defines.join("\n"),
+            fsHead, config.text, 
+            resolve(fsFoot, asset.parent)
+        ].join("\n");
         // console.log(fs);
             
         prog  = twgl.createProgramInfo(gl, [vs, fs], function(msg){
@@ -229,18 +232,18 @@ module.exports = function (asset, config) {
         if(opts.blend) gl.enable(gl.BLEND);
         
         if(eqs) {
-            if(eqs.length === 2) {
-                gl.blendEquation(eqs[0], eqs[1]);
-            } else if(eqs.length === 4) {
-                gl.blendEquationSeparate(eqs[0], eqs[1], eqs[2], eqs[3])
+            if(eqs.length === 1) {
+                gl.blendEquation(eqs[0]);
+            } else if(eqs.length === 2) {
+                gl.blendEquationSeparate(eqs[0], eqs[1]);
             }
         }
 
         if(funcs) {
-            if(funcs.length === 1) {
-                gl.blendFunc(funcs[0]);
-            } else if(funcs.length === 2) {
-                gl.blendFuncSeparate(funcs[0], funcs[1])
+            if(funcs.length === 2) {
+                gl.blendFunc(funcs[0], funcs[1]);
+            } else if(funcs.length === 4) {
+                gl.blendFuncSeparate(funcs[0], funcs[1], funcs[2], funcs[3]);
             }
         }
         
@@ -254,6 +257,15 @@ module.exports = function (asset, config) {
             resize();
         }
 
+        if(opts.rel && State.needResize) {
+            resize();
+        }
+
+        if(clear) {
+            gl.clearColor.apply(gl, clear);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+        }
+
         var fc = uniforms.iFrame;
         gl.useProgram(prog.program);
         var view = [offsetX, offsetY, width, height]
@@ -264,8 +276,9 @@ module.exports = function (asset, config) {
         
         var lastFb = null;
 
-        mfbs.forEach(function(fb) {
+        mfbs.forEach(function(fb, i) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, fb.framebuffer);
+            twgl.setUniforms(prog, { iPass: i });
             draw(fb.attachments[0]);
             uniforms[us1] = fb.attachments[0];
         });

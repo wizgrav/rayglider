@@ -1,0 +1,22 @@
+vec4 $bars(vec4 m, vec2 uv) {
+    vec4 color = vec4(0.);
+    float inc = 1. / 4.;
+    for(float j=0.;j<4.;j++) {
+        float v = m.x;
+        m.xyzw = m.yzwx;
+        color.xyzw = color.yzwx;
+        if(uv.x < j * inc || uv.x >= (j + 1.) * inc) { 
+            continue;
+        }
+
+        if(uv.y > v){ 
+            color.w = 0.2;
+            continue;
+        }
+        color.w = 1.0;
+    }
+    if(color.a == 0.2) color.rgb = vec3(0.2);
+    else if(color.a == 1.0) color.rgb = vec3(1.);
+    color.a = 1.0;
+    return color;
+}

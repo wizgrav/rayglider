@@ -1,0 +1,24 @@
+mat4 $rotate(vec3 v, float angle)
+{
+   float c = cos(radians(angle));
+   float s = sin(radians(angle));
+   
+   return mat4(c + (1.0 - c) * v.x * v.x, (1.0 - c) * v.x * v.y - s * v.z, (1.0 - c) * v.x * v.z + s * v.y, 0.0,
+      (1.0 - c) * v.x * v.y + s * v.z, c + (1.0 - c) * v.y * v.y, (1.0 - c) * v.y * v.z - s * v.x, 0.0,
+      (1.0 - c) * v.x * v.z - s * v.y, (1.0 - c) * v.y * v.z + s * v.x, c + (1.0 - c) * v.z * v.z, 0.0,
+      0.0, 0.0, 0.0, 1.0);
+}
+
+mat4 $translate(vec3 v) {
+   return mat4(1.0,0.0,0.0,0.0,
+      0.0,1.0,0.0,0.0,
+      0.0,0.0,1.0,0.0,
+      v.x,v.y,v.z,1.0);
+}
+
+mat4 $scale(vec3 v) {
+   return mat4(v.x,0.0,0.0,0.0,
+      0.0,v.y,0.0,0.0,
+      0.0,0.0,v.z,0.0,
+      0.0,0.0,0.0,1.0);
+}

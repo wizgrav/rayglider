@@ -47,10 +47,11 @@ function render(time) {
         State.text = null;
         delete State.error;
         Config(text, function (c){
-            if(State.error) { ui(State.error); return; } else { ui(); }
+            if(State.error) { ui(State.error); return; } else { ui(null, c.title); }
             if(State.config) {
                 State.config.prepass.forEach(function(p) { p(false); });
                 State.config.passes.forEach(function(p) { p(false); });
+                State.config.postpass.forEach(function(p) { p(false); });
             }
             State.config = c;
             State.config.uniforms.iBoom = twgl.createTexture(State.context, boomOpts);
@@ -79,7 +80,8 @@ function render(time) {
 
     State.config.prepass.forEach(function(p) { p(); });
     State.config.passes.forEach(function(p) { p(); });
-
+    State.config.postpass.forEach(function(p) { p(); });
+    
     lastTime = time;
     delete State.needResize;
 }

@@ -53,9 +53,10 @@ var decode =  function(base64) {
     return bytes;
 };
 
-var rext = /\#([\w]+)\s+([\w\@\$\-]+)\s*\<\s*(.*)\s*\>/;
+var rext = /^\#([\w]+)\s+([\w\@\$\-]+)\s*\<\s*(.*)\s*\>/;
 var ext1 = /[\@](\w+)\.(\w+)/g;
 var ext2 = /[\$](\w+)/g;
+var rhex = /\#([0-9a-fA-F]+)/g;
 
 function resolve(s, obj, arr) {
     if(!arr) arr = [];
@@ -64,7 +65,15 @@ function resolve(s, obj, arr) {
         if(!nso) return;
         var idx = nso.exported && nso.exported[s3] ? nso.exported[s3].idx:nso.idx;
         var s = ["raygl", s3, idx].join("_"); arr.push(s); return s; 
-    }).replace(ext2, function(s1, s2) { var s = ["raygl", s2, obj.idx].join("_");  arr.push(s); return s;});
+    }).replace(ext2, function(s1, s2) { var s = ["raygl", s2, obj.idx].join("_");  arr.push(s); return s;})
+    .replace(rhex, function(s) {
+        if(s !== s.toUpperCase()) return s;
+        var arr = [];
+        for(var i=1; i < s.length; i+=2) {
+            arr.push(parseInt("0x" + s.substr(i,2)) / 255);
+        }
+        return ["vec", arr.length, "(", arr.map(function(v){ return v.toFixed(3); }).join(", "), ")"].join("");
+    });
  }
 
 
@@ -139,6 +148,22 @@ function LZMA(lzma_path) {
             }
         };
     }());
+};
+
+var parseStyle = function (s) {
+    var a = s.split(";"), ret = {};
+    a.forEach(function(v){
+        var a = v.split(":").map(function(v) { return v.trim()});
+        if(a.length > 1 ) {
+            ret[a[0]] = a[1].split(" ").map(function(v){
+                var n = parseFloat(v);
+                return isNaN(n) ? v : n;
+            });
+        } else {
+            ret[a[0]] = true;
+        }
+    });
+    return ret;
 };
 
 var wsrc = ["var LZMA=function(){function m(a){var b=[];b[a-1]=void 0;return b}function J(a,b){return Z(a[0]+b[0],a[1]+b[1])}function ta(a,b){var c=E(a)&E(b);var d=4294967296*(~~Math.max(Math.min(a[1]/4294967296,2147483647),-2147483648)&~~Math.max(Math.min(b[1]/4294967296,2147483647),-2147483648));var e=c;0>c&&(e+=4294967296);return[e,d]}function M(a,b){if(a[0]==b[0]&&a[1]==b[1])return 0;var c=0>a[1];var d=0>b[1];return c&&!d?-1:!c&&d?1:0>Z(a[0]-b[0],a[1]-b[1])[1]?-1:1}function Z(a,b){b%=1.8446744073709552E19;",
@@ -218,6 +243,7 @@ module.exports = {
     rext: rext,
     ext1: ext1,
     ext2: ext2,
+    parseStyle: parseStyle,
     PREFIX: "https://wizgrav.github.io/rayglider/r.html?s=",
     getParameterByName: function(name, search) {
         name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");

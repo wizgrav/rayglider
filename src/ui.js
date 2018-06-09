@@ -245,8 +245,9 @@ if(!src) {
   util.lzma.decompress(util.atob(src), function(res){ State.text = res; cm.setValue(res);  }, function(){});
 }
 cm.refresh();
+var titleEl = document.querySelector("#title"), titleTimeout;
 
-module.exports = function (err) {
+module.exports = function (err, title) {
   if(err) {
     if(document.body.classList.contains("split")) {
       Buttons["split"].click();
@@ -259,5 +260,14 @@ module.exports = function (err) {
   } else {
     document.body.classList.remove("error");
     cs.setValue("");
+  }
+
+  if(title) {
+    titleEl.textContent = title;
+    titleEl.classList.add("show");
+    if(titleTimeout) window.clearTimeout(titleTimeout);
+    titleTimeout = window.setTimeout(function() {
+      titleEl.remove("show");
+    }, title.length * 200);
   }
 }

@@ -11,12 +11,14 @@ var config;
 
 function createConfig() {
     return  {
+        title: null,
         imports: {},
         exports: {},
         assets: {},
         urls:{},
         prepass:[],
         passes: [],
+        postpass: [],
         uniforms: {
             iTime: 0,
             iDelta: 0,
@@ -46,11 +48,12 @@ function createObj(sid) {
     return {
         outgoing: [],
         ds: {
-            import:[], export:[], pass:[], cube: [], image: [], video: [], boom: [], band: [], track: [], net: []
+            import:[], export:[], pass:[], post: [], cube: [], image: [], video: [], boom: [], band: [], track: [], net: []
         },
         ns: {},
         exports: {},
         passes: [],
+        post: [],
         booms: {},
         bands: {},
         text: "",
@@ -69,6 +72,9 @@ function parse(t, u) {
         var ta = [];
         obj.origText = t;
         t.match(/[^\r\n]+/g).forEach(function(m) {
+            if(!u && !config.title && m.substr(0,2) === "//") {
+                config.title = m.substr(2);
+            }
             var sm = m.match(rext);
             if(!sm) { ta.push(m); return; }
             sm.shift();
@@ -114,6 +120,12 @@ function parse(t, u) {
     ds.pass.forEach(function(sm) {
         var p = {data: sm[2], nop: sm[1] === "void", main: sm[1] === "main"};
         obj.passes.push(p);
+        obj.ns[sm[1]] = p;
+    });
+
+    ds.post.forEach(function(sm) {
+        var p = {data: sm[2], nop: sm[1] === "void", main: sm[1] === "main"};
+        obj.post.push(p);
         obj.ns[sm[1]] = p;
     });
 
@@ -192,7 +204,8 @@ function finalize() {
     var body = [];
 
     var passes = [];
-
+    var post = [];
+    
     config.imports[""].exported = config.exports;
 
     Object.keys(config.assets).forEach(function(o, i) {
@@ -205,17 +218,27 @@ function finalize() {
         var a = config.imports[o];
         a.outgoing = [];
         a.idx = o ? idx++ : "";
-        passes.push({data: "noblend", nop: true});
-        var mainPass = {data: "1 1 0 0 rel screen noblend", idx: a.idx, parent: a};
-        a.passes.forEach(function(p){ 
+        if(a.passes.length) passes.push({data: "noblend", nop: true});
+        var mainPass = {data: "view: 1 1 0 0; rel; screen; noblend", idx: a.idx, parent: a};
+        
+        function passFn(p){
             p.idx = idx++;
             p.parent = a;
-            if(p.main){ mainPass.data = p.data; return; };
             if(!p.nop){ 
                 head.push("\n// tex: " + o); 
                 head.push(resolve("uniform sampler2D $tex;\n\n", p));
             }
+        }
+        
+        a.passes.forEach(function(p){ 
+            passFn(p);
+            if(p.main){ mainPass.data = p.data; return; };
             passes.push(p);
+        });
+
+        a.post.forEach(function(p){ 
+            passFn(p);
+            post.push(p);
         });
         
         if(a.ds.boom.length) head.push("\n// boom: " + o); 
@@ -250,6 +273,10 @@ function finalize() {
     
     passes.forEach(function(p){
         config.passes.push(pass(p, config));
+    });
+
+    post.forEach(function(p){
+        config.postpass.push(pass(p, config));
     });
 
     Object.keys(config.assets).forEach(function(o, i) {

@@ -372,15 +372,36 @@
 
       #tap div {
         color: white;
+        font-size: 3.33vh;
+        font-weight: bold;
+        align-self: center;
+      }
+
+      #title {
+        color: white;
         font-size: 6.66vh;
         font-weight: bold;
         align-self: center;
+        z-index: 10;
+        position: fixed;
+        width: 100vw;
+        text-align:center;
+        text-shadow: 0.33vh 0.33vh black;
+        left:0;
+        top: 10vh;
+        transition: opacity 1s;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #title.show {
+        opacity: 1;
       }
     </style>
     </head>
 
     <body>
-      
+      <div id=title></div>
       <div id="audio" title="WARNING: The volume control affects the measurements.">    
         
       </div>
