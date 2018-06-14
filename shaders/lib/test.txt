@@ -1,5 +1,6 @@
-// The Garden of Jouls
-// by wizgrav
+// El Jardí de Catalunya
+// by El Greco
+// https://tinyurl.com/y8sbqhz7
 #import C < color >
 #import SDF < sdf >
 #import CAM < camera >

@@ -1,5 +1,5 @@
 require('./src/ui');
-var twgl = require('twgl-base.js');
+var twgl = require('twgl.js');
 require('glsl-transpiler');
 var Clubber = require('clubber');
 var Config = require("./src/config");

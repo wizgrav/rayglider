@@ -1,5 +1,5 @@
 var State = require("./state");
-var twgl = require("twgl-base.js");
+var twgl = require("twgl.js");
 var util = require("./util");
 
 twgl.setDefaults({crossOrigin: ""});

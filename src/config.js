@@ -160,7 +160,7 @@ function parse(t, u) {
         } else {
             var ss = window.localStorage.getItem(sm);
             if(ss) {
-                decomparse(s, sm);
+                decomparse(ss, sm);
             } else {
                 var iframe = document.createElement("iframe"); 
                 iframe.setAttribute("name", "raygl$" + sm);
@@ -179,7 +179,7 @@ function parse(t, u) {
 function decomparse(s, name) {
     lzma.decompress(util.atob(s), function(s, error) {
         var c = config.imports[name];
-        document.body.removeChild(c.iframe);
+        if(c.iframe) document.body.removeChild(c.iframe);
         c.iframe = null;
         parse(s, name);
     }, function(percent) {});
