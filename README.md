@@ -12,7 +12,7 @@ The limits on url length effectively contain individual scripts to ~4KB of text 
 
 ## Resources
 
-[RayGL Documentation](./RAYGL)
+[RayGL Documentation](./RAYGL.md)
 
 [Core shader lib](./lib/)
 
