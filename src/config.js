@@ -71,10 +71,13 @@ function parse(t, u) {
     if(!obj.text) {
         var ta = [];
         obj.origText = t;
+        var firstLine = true;
         t.match(/[^\r\n]+/g).forEach(function(m) {
-            if(!u && !config.title && m.substr(0,2) === "//") {
+            if(!u && !config.title && m.substr(0,2) === "//" && firstLine) {
                 config.title = m.substr(2);
             }
+
+            firstLine = false;
             var sm = m.match(rext);
             if(!sm) { ta.push(m); return; }
             sm.shift();
@@ -110,10 +113,6 @@ function parse(t, u) {
     });
 
     ds.export.forEach(function(sm) { 
-        if(config.exports[sm[1]]) { 
-            return;
-        }
-        config.exports[sm[1]] = obj;
         obj.exports[sm[1]] = sm[2];
     });
 
@@ -214,11 +213,18 @@ function finalize() {
         head.push(resolve(a.text,a));
     });
 
-    order.forEach(function(o, i) {
-        config.imports[o].idx = o ? idx++ : "";
+    order.reverse().forEach(function(o, i) {
+        var a = config.imports[o]; 
+        a.idx = o ? idx++ : "";
+        Object.keys(a.exports).forEach(function(v){
+            if(config.exports[v]) { 
+                return;
+            }
+            config.exports[v] = a;
+        });
     });
 
-    order.forEach(function(o, i) {
+    order.reverse().forEach(function(o, i) {
         var a = config.imports[o];
         a.outgoing = [];
         if(a.passes.length) passes.push({data: "noblend", nop: true});

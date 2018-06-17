@@ -180,6 +180,7 @@
         transition: opacity 0.1s;
         text-shadow: 0.2vh 0.2vh #000;
         margin-left: 1vw;
+        font-size: 2.2vh;
       }
       #info a {
         opacity: 0.96;
@@ -239,6 +240,7 @@
         padding-left: 0.2vh;
         padding-right: 0.2vh;
         padding-bottom: 0.4vh;
+        margin-top: -0.66vh;
       }
       
       .CodeMirror {
@@ -397,6 +399,14 @@
       #title.show {
         opacity: 1;
       }
+
+      #main, #side {
+        transition: opacity 0.33s;
+        transition-delay: 0.66s;
+      }
+      body.hide-editor #main, body.hide-editor #side{
+        opacity: 0;
+      }
     </style>
     </head>
 
@@ -437,9 +447,9 @@
             <button accesskey="P" id="play"></button>
           </div>
           <div id="stats" style="text-align: center; padding-top:1.61vh;width:50vw;">
-            <span style="color:#EEE">Frame 2345677</span> 
-            <span>59.1 FPS</span> 
-            <span id="time" style="color:#EEE">00:01:30.1s</span></div> 
+            <span style="color:#EEE"></span> 
+            <span></span> 
+            <span id="time" style="color:#EEE"></span></div> 
           <div style="text-align: right; float: right; width:25vw;">
             <button accesskey="R" id="reset">RESET</button>
             <button accesskey="S" id="split"></button>
@@ -449,7 +459,7 @@
         
       </div>
       <canvas></canvas>
-      <div id="tap"> <div style="text-align:center">Tap/Click to unmute<br/>Drag and drop mp3s to listen</div> </div>
+      <div id="tap"> <div style="text-align:center">Tap/Click to unmute<br/>Drag and drop your audio files to listen</div> </div>
       <script src="./dist/rayglider.js"></script>
     </body>
 </html>

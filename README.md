@@ -1,6 +1,6 @@
 # Rayglider
 
-Rayglider is a shader sandbox that attempts to modernize glsl development. 
+Rayglider attempts to modernize glsl development and provide a powerful medium for artistic expression. 
 
 Every aspect of it is driven and configured solely in the editor utilizing RayGL, a glsl variant that provides a modular shader composition mechanism, asset handling and multi pass setup.
 
@@ -14,8 +14,10 @@ The limits on url length effectively contain individual scripts to ~4KB of text 
 
 [RayGL Documentation](./RAYGL)
 
-[Core script lib](./lib/)
+[Core shader lib](./lib/)
 
 ## Examples
 
 [Techno Kids](http://tinyw.in/9vRD)
+
+[El Jardí de Catalunya](https://tinyurl.com/yabzorpx)

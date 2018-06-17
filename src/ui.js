@@ -95,7 +95,7 @@ Array.prototype.forEach.call(buttons, function (b) {
     },
 
     create: function(){
-     window.open("run.html");
+     window.open("run.html?s=XQAAAAKrAAAAAAAAAAAFYdTeawTqKymAWjyFtIA3PCFdfKL6my74WDEb0KQDsz72jEGYTdqWLpRRnBYSxJcYux7lHGFyi_EhBW2J5uw0y1LC4slw3EK69zgNwislq4iRrB5DqeUkJeeLcHvqd_BS9y5Cp5-HCw8Lu1K_eLKUtMKjBC1wqRNhc4urpOBp4N3--OLA");
     }
   }[b.id])
 });
@@ -159,6 +159,18 @@ var cs = CM(document.querySelector("#side"), cmOpt(true));
 var applyButton = document.querySelector("#apply");
 cm.on("change", function(cm, change) { applyButton.classList.remove("disabled"); });
 
+function checkAlt(e){
+  if(e.altKey) {
+    document.body.classList.add("hide-editor");
+  } else {
+    document.body.classList.remove("hide-editor");
+  }
+}
+document.addEventListener("keydown", checkAlt );
+document.addEventListener("keyup", checkAlt );
+
+window.addEventListener("focus", function () { document.body.classList.remove("hide-editor"); }, false);
+    
 
 document.querySelector('#main').addEventListener("click", function(e) {
   if(e.target.classList.contains('cm-link'))  {
