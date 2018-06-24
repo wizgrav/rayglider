@@ -32,6 +32,7 @@ function createConfig() {
             iPad1: new Float32Array(4),
             iPad2: new Float32Array(4),
             iPad3: new Float32Array(4),
+            iCam: new Float32Array(16),
             iBoom: null
         },
         assetCount: 1,
