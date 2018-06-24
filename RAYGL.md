@@ -134,7 +134,7 @@ Sets up multi pass.
 
 ```
 // Pass textures are half the screen size
-#pass MYPASS <0.5 0.5 rel>
+#pass MYPASS <view: 0.5 0.5; rel>
 
 $main(vec4 outputColor, vec3 fragCoords) 
 {
@@ -163,9 +163,9 @@ Passes render directly to the screen or in framebuffer textures. Framebuffers ex
 
 Framebuffers are paired so the last rendered frame can be accesed through the .tex property for implementing feedback effects.
 
-Configuration of the pass is performed with the use of unordered numbers and keywords in the directive. 
+Configuration of the pass is performed using a style parser in the directive text. 
 
-The first two numbers are used for the width and height of the viewport, the next two for the offset. These are interpreted as pixels by default and if the rel keyword is used, relative to the screen size. 
+**view** - The first two numbers are used for the width and height of the viewport, the next two for the offset. These are interpreted as pixels by default and if the rel keyword is used, relative to the screen size. 
 
 The keywords supported are the following:
 
@@ -175,8 +175,8 @@ The keywords supported are the following:
 
 **func-xxx** - Set the blendFunction like this:
 ```
-#pass PASS1 < func-one-msa >
-#pass PASS2 < func-one-msa-one-zero >
+#pass PASS1 < func: one msa >
+#pass PASS2 < func: one msa one zero >
 ```
 
 They keyword can be accompanied by 2 or 4 tokens, to use blendFunc or blendFuncSeparate respectively. Tokens are shortcuts for the following gl contants:
@@ -205,7 +205,7 @@ Mind that rayglider will try to enable the blend_minmax extension but it is not 
 **wrap**  Sets the wrap options for the framebuffer textures:
 
 ```
-#pass P1 <1 1 rel wrap-clamp-repeat>
+#pass P1 <view: 1 1; rel; wrap: clamp repeat>
 ```
 
 *   "mirror": "MIRRORED_REPEAT",
@@ -215,7 +215,7 @@ Mind that rayglider will try to enable the blend_minmax extension but it is not 
 **freq** Controls how often this pass will be performed. Accepts an argument for the number of frames to skip between invocations.
 
 ```
-#pass P1 <1 1 rel freq-10>
+#pass P1 <view: 1 1; rel; freq: 10>
 ```
 
 **mipmap** Try to generate mipmaps for the framebuffer texture after render.
