@@ -109,7 +109,7 @@ var tracks = [], activeTrack = null;
 function fallback() {
     if(!tracks.length) return;
     document.body.classList.remove("soundcloud");
-    activeTrack = tracks.shift();
+    activeTrack = tracks.splice(Math.floor(Math.random() * tracks.length),1)[0];
     if(activeTrack === "") {
         updateInfo("#", "live input");
         mic();
@@ -117,7 +117,7 @@ function fallback() {
         document.body.classList.add("soundcloud");
         soundcloud(activeTrack);
     } else {
-        updateInfo(activeTrack, activeTrack.split("/").pop());
+        updateInfo(activeTrack, decodeURIComponent(activeTrack.split("/").pop()));
         play(activeTrack);
     }
 }

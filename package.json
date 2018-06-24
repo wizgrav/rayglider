@@ -24,6 +24,9 @@
     "music",
     "audio",
     "reactive",
+    "webgl",
+    "shader",
+    "clubber",
     "midi",
     "boom"
   ],
