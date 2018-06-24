@@ -16,6 +16,7 @@ tapEl.addEventListener("click", function() {
     audio.muted = false;
     State.clubber.context.resume();
     document.body.classList.remove("muted");
+    if(audio.paused && audio.src) audio.play();
 });
 
 function play (src, dropped) {
