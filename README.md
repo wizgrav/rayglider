@@ -1,5 +1,7 @@
 # Rayglider
 
+![El Jardí de Catalunya](./jardi.jpg)
+
 Rayglider attempts to modernize glsl development and provide a powerful medium for artistic expression. 
 
 Every aspect of it is driven and configured solely in the editor utilizing RayGL, a glsl variant that provides a modular shader composition mechanism, asset handling and multi pass setup.
