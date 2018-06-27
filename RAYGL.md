@@ -1,8 +1,8 @@
 # RayGL
 
-RayGL makes use of special prefixes and directives. THe main script and all dependencies are composed in a single uber shader(Multi pass is controlled with conditional defines and the pass directive). If you want to debug the final glsl output, for now, just make a small typo and click "Apply". The side editor will show the final shader text along with the error message.
+RayGL makes use of special prefixes and directives. THe main script and all dependencies are composed in a single uber shader(Multi pass is controlled with conditional defines and the pass directive). If you want to debug the final glsl output, for now, just make a small typo and click "Apply"(Shortcuts are Alt-A and Alt-Enter). The side editor will show the final shader text along with the error message.
 
-All scripts must use "$main(vec4 outputColor, vec2 fragCoords)" as the entry point. The use of the "$" character does the namespacing to prevent conflicts and allow for variable/function reuse in other scripts.
+All scripts must use "$main(vec4 outputColor, vec2 fragCoords)" as the entry point for the shader execution(The one from the currently active script will be used). The use of the "$" character does the namespacing to prevent conflicts and allow for variable/function reuse in other scripts.
 
 Code modularization is performed with the following directives:
 
