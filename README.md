@@ -20,4 +20,4 @@ The limits on url length effectively contain individual scripts to ~4KB of text 
 
 [Techno Kids](http://tinyw.in/9vRD)
 
-[El Jardí de Catalunya](https://tinyurl.com/ybgfwulm)
+[El Jardí de Catalunya](https://tinyurl.com/ybgfwulm) - [Article describing the audio reactive technique used](https://medium.com/@wizgrav/music-gradients-6b7177a97b5f)
