@@ -35,6 +35,7 @@ Scripts can define special placeholders in a global namespace to allow for overr
 ```
 #export a_global_func < vec3 (vec3 col) >
 #export a_global_var < vec3 = vec3(0.1, 0.3, 0.2) >
+// We import the global namespace like this:
 #import GLOBAL <>
 
 vec3 $a_global_func( vec3 col )
@@ -55,15 +56,15 @@ We then save/short url this script in someUrl and make a new one like:
 ```
 #import myModule <someUrl>
 #export a_global_func < vec3 (float myArg) >
-#export a_global_var < vec3 = vec3(0.5, 0.2, 0.1) >
 
 vec3 $a_global_func( vec3 col )
 {
-    return col + @GLOBAL.a_global_var;
+    return col + vec3(0.1);
 }
 
 $main(vec4 outputColor, vec3 fragCoords) 
-{
+{   
+    // the $main function from the previous script will use the a_global_func defined in this script
     @myModule.main(outputColor, fragCoords);
 }
 ```
